@@ -1,6 +1,6 @@
 ---
 
-  transfer_server: "10.17.13.121"
+  transfer_server: "1.1.1.1"
 
   plat_c4500_plus:
       hardware: WS-C4510R+E
@@ -26,12 +26,6 @@
     image: c2960s-universalk9-mz.122-58.SE2.bin
     hash: 35781dfee3d11ad76a64f0df166b1a54
     size: 13244928
-
-#  plat_c3650:
-#    hardware: WS-C3650
-#    image: cat3k_caa-universalk9.SPA.03.06.06.E.152-2.E6.bin
-#    hash: 7c2abd4f5856b80afbcc283f6f12797a
-#    size: 303779840
 
   plat_c3650:
     hardware: WS-C3650
