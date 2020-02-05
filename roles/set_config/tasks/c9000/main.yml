@@ -1,0 +1,56 @@
+---
+
+  - debug:
+      msg: "Hash checks and boot var setting for c9000 ..."
+
+  - name: Check Hash on Flash
+    ios_command:
+      commands: "verify /md5 flash:{{ plat_c9000.image }}"
+    register: md5_out
+    vars:
+      ansible_command_timeout: 3600
+
+  - name: Abort If Hash Does Not Match
+    fail: msg="Aborting....The Hash does not match in Flash, image might be corrupted..."
+    when: plat_c9000.hash not in md5_out.stdout[0]
+
+  - name: Disable prompts
+    ios_config:
+      lines: "file prompt quiet"
+    when: prompt_go is defined
+  
+  - name: Clean Up if upgrading from a later or same version to 16.6.2
+    ios_command:
+      commands: 
+        - command: "install remove inactive"
+          prompt: 'Do you want to remove the above files? \[y/n\]\'
+          answer: 'y'
+    vars:
+      ansible_command_timeout: 600
+    when: prompt_go_is defined and higher_version is defined
+
+  - name: Install Software
+    ios_config:
+      lines: "boot system flash:packages.conf"
+      timeout: 40
+      save_when: modified
+    when: prompt_go_is defined
+
+  - name: Commit Software if upgrading from a later or same version to 16.6.2...
+    ios_command:
+      commands: 
+        - command: "install add file flash:{{ plat_c9000.image }} activate commit"
+          prompt: 
+            - 'Press Quit(q) to exit, you may save configuration and re-enter the command. \[y/n/q\]\'
+            - 'Please confirm you have changed boot config to flash:packages.conf \[y/n\]\'
+          answer: 
+            - 'y'
+            - 'y'
+    vars:
+      ansible_command_timeout: 600
+    when: version_fact != plat_c9000.image and sw_check_fact in show_version_platform.stdout[0]
+
+  - name: Re-enable able prompts
+    ios_config:
+      lines: "no file prompt quiet"
+    when: prompt_go is defined

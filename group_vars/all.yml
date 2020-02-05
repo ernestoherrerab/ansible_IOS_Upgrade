@@ -1,0 +1,49 @@
+---
+
+  transfer_server: "10.17.13.121"
+
+  plat_c4500_plus:
+      hardware: WS-C4510R+E
+      image : cat4500es8-universalk9.SPA.03.06.06.E.152-2.E6.bin
+      hash : a94ef37a430f922d76faa6e9dd741141
+      size : 200266820
+
+  plat_c4500:
+      hardware: WS-C4510R-E
+      image : cat4500e-entservicesk9-mz.152-2.E4.bin
+      hash : 7c46833cecebaf2c646b7c65f4e98838
+      size : 39746167
+
+  plat_c3850:
+     hardware: WS-C3850
+     image: cat3k_caa-universalk9.16.03.06.SPA.bin
+     hash: a65a6308ec728a92f8463e5bfb6b79f0
+     size: 305292424
+     sw_check: 16.3.6
+
+  plat_c2960s:
+    hardware: C2960S
+    image: c2960s-universalk9-mz.122-58.SE2.bin
+    hash: 35781dfee3d11ad76a64f0df166b1a54
+    size: 13244928
+
+#  plat_c3650:
+#    hardware: WS-C3650
+#    image: cat3k_caa-universalk9.SPA.03.06.06.E.152-2.E6.bin
+#    hash: 7c2abd4f5856b80afbcc283f6f12797a
+#    size: 303779840
+
+  plat_c3650:
+    hardware: WS-C3650
+    image: cat3k_caa-universalk9.16.03.09.SPA.bin
+    hash: e69855fc0360eecd54c095125d5962ca
+    size: 537337933
+    sw_check: 16.3.9
+
+  plat_c9000:
+   hardware: CAT9K
+   image: cat9k_iosxe.16.09.04.SPA.bin
+   hash: 13fbb3e0defb5637277e355bbd7d9c04
+   size: 705009898
+   sw_check: 16.9.4
+

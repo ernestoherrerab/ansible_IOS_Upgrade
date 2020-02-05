@@ -1,0 +1,40 @@
+---
+
+#  - debug:
+#      msg: "Hello World!"
+
+  - name: Parse show version
+    cli:
+      command: show version
+      parser: "/etc/ansible/ios_upgrade/parsers/c4500/show_version.yml"
+
+  - name: Parse show flash
+    cli:
+      command: show bootflash
+      parser: "/etc/ansible/ios_upgrade/parsers/c4500/show_bootflash.yml"
+
+#  - debug:
+#      var: show_version_facts
+
+  - debug:
+      var: version.matches[0]
+
+  - name: Set Version Fact
+    set_fact:
+      version_fact: "{{ version.matches[0] }}"
+      confreg_fact: "{{ confreg.matches[0] }}"
+      free_space_fact: "{{ free_space.matches[0] }}"
+      used_space_fact: "{{ used_space.matches[0] }}"
+
+  - name: Set Space Variable
+    set_fact:
+      space_fact: "{{ free_space_fact|int - plat_c4500_plus.size|int }}"
+
+  - name: Set Green Light to begin copy file role
+    set_fact:
+      go_signal: "Go!"
+    when: version_fact != plat_c4500_plus.image
+
+  - debug:
+     var: go_signal
+    when: go_signal is defined

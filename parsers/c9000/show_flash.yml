@@ -1,0 +1,19 @@
+---
+
+ - name: Parser Metadata
+   parser_metadata:
+      version: 1.0
+      command: "dir flash:"
+      network_os: ios
+
+ - name: Match Total Space
+   pattern_match:
+      regex: "(\\d+) bytes total"
+   register: total_space
+   export: yes
+
+ - name: Match Used Space
+   pattern_match:
+      regex: "\\d+ bytes total\\s\\S(\\d+) bytes free\\S"
+   register: used_space
+   export: yes

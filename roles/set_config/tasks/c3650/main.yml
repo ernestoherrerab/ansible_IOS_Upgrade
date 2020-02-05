@@ -1,0 +1,63 @@
+---
+
+  - debug:
+      msg: "Hash checks and boot var setting for c3650 ..."
+
+  - name: Check Hash on Flash
+    ios_command:
+      commands: "verify /md5 flash:{{ plat_c3650.image }}"
+    register: md5_out
+    vars:
+      ansible_command_timeout: 3600
+
+  - name: Abort If Hash Does Not Match
+    fail: msg="Aborting....The Has does not match in Flash, image might be corrupted..."
+    when: plat_c3650.hash not in md5_out.stdout[0]
+
+  - name: Disable prompts
+    ios_config:
+      lines: "file prompt quiet"
+    when: prompt_go is defined
+
+  - name: Install Software if current version is 16.x
+    ios_command:
+      commands: "request platform software package install switch all file flash:{{ plat_c3650.image }} new auto-copy"
+    vars:
+      ansible_command_timeout: 600
+    when: version_fact != plat_c3650.image and sw_check_fact in show_version_platform.stdout[0]
+
+  - name: Check number of switches if version is 3.x
+    ios_command:
+      commands: "show switch | include Ready"
+    register: num_switches
+    when: version_fact != plat_c3650.image and sw_check_fact not in show_version_platform.stdout[0]
+
+  - name: Set Variable for the Number of Switches
+    set_fact:
+      num_switches_fact: "{{ num_switches.stdout_lines[0]|length }}"
+    when: num_switches is defined
+
+  - name: Install Software 16.x if software is 3.x and only one switch on stack
+    ios_command:
+      commands:
+        - command: "software install file flash:{{ plat_c3650.image }} switch 1 new force"
+          prompt: 'Do you want to proceed with reload? \[yes/no\]\:'
+          answer: 'n'
+    vars:
+      ansible_command_timeout: 600
+    when: version_fact != plat_c3650.image and sw_check_fact not in show_version_platform.stdout[0] and num_switches_fact == 1
+
+  - name: Install Software 16.x if software is 3.x and only one switch on stack
+    ios_command:
+      commands:
+        - command: "software install file flash:{{ plat_c3650.image }} switch 1-{{ num_switches_fact }} new force"
+          prompt: 'Do you want to proceed with reload? \[yes/no\]\:'
+          answer: 'n'
+    vars:
+      ansible_command_timeout: 600
+    when: version_fact != plat_c3650.image and sw_check_fact not in show_version_platform.stdout[0] and num_switches_fact > 1
+
+  - name: Re-enable able prompts
+    ios_config:
+      lines: "no file prompt quiet"
+    when: prompt_go is defined

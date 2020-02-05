@@ -1,0 +1,21 @@
+---
+
+  - name: Run specific 4500 tasks
+    include_tasks: "c4500_plus/main.yml"
+    when: plat_c4500_plus.hardware in show_version_platform.stdout[0]
+
+  - name: Run specific 4500 tasks
+    include_tasks: "c4500/main.yml"
+    when: plat_c4500.hardware in show_version_platform.stdout[0]
+
+  - name: Run specific 3850 tasks
+    include_tasks: "c3850/main.yml"
+    when: plat_c3850.hardware in show_version_platform.stdout[0]
+
+  - name: Run specific 2960s tasks
+    include_tasks: "c2960s/main.yml"
+    when: plat_c2960s.hardware in show_version_platform.stdout[0]
+
+  - name: Run specific 3650 tasks
+    include_tasks: "c3650/main.yml"
+    when: plat_c3650.hardware in show_version_platform.stdout[0]

@@ -1,0 +1,27 @@
+---
+
+ - name: Parse show version
+   cli:
+     command: show version
+     parser: "/etc/ansible/ios_upgrade/parsers/c2960/show_version.yml"
+
+ - name: Parse show flash
+   cli:
+     command: "show flash:"
+     parser: "/etc/ansible/ios_upgrade/parsers/c2960/show_flash.yml"
+
+ - name: Set Version Fact
+   set_fact:
+      version_fact: "{{ version.matches[0] }}"
+      confreg_fact: "{{ confreg.matches[0] }}"
+      total_space_fact: "{{ total_space.matches[0] }}"
+      free_space_fact: "{{ free_space.matches[0] }}"
+
+ - name: Set Space Variable
+   set_fact:
+      space_fact: "{{ free_space_fact|int - plat_c2960s.size|int }}"
+
+ - name: Set Green Light to begin copy file role
+   set_fact:
+      go_signal: "Go!"
+   when: version_fact != plat_c2960s.image

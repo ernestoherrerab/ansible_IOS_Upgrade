@@ -1,0 +1,33 @@
+---
+
+- import_role:
+    name: ansible-network.network-engine
+
+- name: Run show version command to capture platform type
+  ios_command:
+    commands: show version
+  register: show_version_platform
+
+- name: Run specific 4500R+E tasks
+  include_tasks: "c4500_plus/main.yml"
+  when: plat_c4500_plus.hardware in show_version_platform.stdout[0]
+
+- name: Run specific 4500R-E tasks
+  include_tasks: "c4500/main.yml"
+  when: plat_c4500.hardware in show_version_platform.stdout[0]
+
+- name: Run specific 3850 tasks
+  include_tasks: "c3850/main.yml"
+  when: plat_c3850.hardware in show_version_platform.stdout[0]
+
+- name: Run specific 2960s tasks
+  include_tasks: "c2960s/main.yml"
+  when: plat_c2960s.hardware in show_version_platform.stdout[0]
+
+- name: Run specific 3650 tasks
+  include_tasks: "c3650/main.yml"
+  when: plat_c3650.hardware in show_version_platform.stdout[0]
+
+- name: Run specific Catalyst 9K tasks
+  include_tasks: "c9000/main.yml"
+  when: plat_c9000.hardware in show_version_platform.stdout[0]

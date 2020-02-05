@@ -1,0 +1,14 @@
+---
+
+  - name: Kickstart IOS Upgrade process
+    hosts: test_host
+    gather_facts: false
+    vars_prompt:
+      - name: "password"
+        prompt: "Password"
+        private: yes
+
+    roles:
+      - set_vars
+      - { role: copy_file, when: go_signal is defined  }
+#      - { role: set_config, when: go_signal is defined }

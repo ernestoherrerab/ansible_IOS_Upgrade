@@ -1,0 +1,50 @@
+---
+
+ - name: Parser Metadata
+   parser_metadata:
+      version: 1.0
+      command: show version
+      network_os: ios
+
+ - name: Match Software Version
+   pattern_match:
+      regex: "^Cisco IOS Software.*Version\\s+(\\d+\\.\\d+\\.\\S+)"
+   register: version
+   export: yes
+
+ - name: Match Hostname
+   pattern_match:
+      regex: "(\\S+) uptime"
+   register: hostname
+   export: yes
+
+ - name: Match Hardware
+   pattern_match:
+      regex: "^Model Number\\s+:\\s(\\S+)"
+   register: hardware
+   export: yes
+
+ - name: Match Config Register
+   pattern_match:
+     regex: "^Configuration register is\\s+(\\S+)"
+   register: confreg
+   export: yes
+
+ - name: Build JSON Data Structure
+   json_template:
+       template:
+        - key: "{{ hostname.matches.0}}"
+          object:
+            - key: data
+              object:
+                - key: version
+                  value: "{{ version.matches.0 }}"
+                - key: hostname
+                  value: "{{ hostname.matches.0 }}"
+                - key: confreg
+                  value: "{{ confreg.matches.0 }}"
+                - key: hardware
+                  value: "{{ hardware.matches.0 }}"
+   register: show_version_facts
+   export: yes
+   export_as: dict

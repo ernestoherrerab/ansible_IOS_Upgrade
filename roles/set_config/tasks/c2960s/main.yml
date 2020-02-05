@@ -1,0 +1,24 @@
+---
+
+ - debug:
+     msg: "Hash checks and boot var setting for c2960s ..."
+
+ - name: Check Hash on Flash
+   ios_command:
+     commands: "verify /md5 flash{{ item }}:{{ plat_c2960s.image }}"
+   vars:
+     ansible_command_timeout: 3600
+   loop: "{{ range(1, num_switches_fact|int +1)|list }}"
+   register: md5_out
+
+ - name: Abort If Hash Does Not Match
+   fail: msg="Aborting....The Has does not match in flash, image might be corrupted..."
+   when: plat_c2960s.hash not in item.stdout[0]
+   loop: "{{ md5_out.results }}"
+
+ - name: Install Software
+   ios_config:
+     lines: "boot system switch all flash:{{ plat_c2960s.image}}"
+     timeout: 40
+     save_when: modified
+   when: version_fact != plat_c2960s.image

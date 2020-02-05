@@ -1,0 +1,54 @@
+---
+
+  - debug:
+      msg: " Copying Files for c2960 ..."
+
+  - name: Abort task if there is not enough space
+    fail: msg="There is not enough space for new image..."
+    when:  space_fact|int < 0
+
+  - name: Check number of switches
+    ios_command:
+      commands: "show switch | include Ready"
+    register: num_switches
+
+  - name: Set Variable for the Number of Switches
+    set_fact:
+      num_switches_fact: "{{ num_switches.stdout_lines[0]|length }}"
+
+  - name: Run show version command to capture flash output
+    ios_command:
+      commands: "show flash{{ item }}"
+    loop: "{{ range(1, num_switches_fact|int +1)|list }}"
+    register: show_flash_platform
+
+  - name: Set Go Signal for File prompts
+    set_fact:
+      prompt_go: "Go!"
+    when: plat_c2960s.image not in item.stdout[0]
+    loop: "{{ show_flash_platform.results }}"
+
+  - debug:
+      msg: "The image already exists in flash..."
+    when: prompt_go is not defined
+
+  - name: Disable prompts
+    ios_config:
+      lines: "file prompt quiet"
+    when: prompt_go is defined
+
+  - name: Copy image to flash
+    ios_command:
+      commands: "copy http://{{ transfer_server }}/{{ plat_c2960s.image }} flash{{ item }}:{{ plat_c2960s.image }}"
+    vars:
+      ansible_command_timeout: 3600
+    when: prompt_go is defined
+    loop: "{{ range(1, num_switches_fact|int +1)|list }}"
+
+  - name: Re-enable able prompts
+    ios_config:
+      lines: "no file prompt quiet"
+    when: prompt_go is defined
+
+  - debug:
+      msg: "{{ inventory_hostname }} has {{ if_unused_no }} unused interfaces" 

@@ -1,0 +1,19 @@
+---
+
+ - name: Parser Metadata
+   parser_metadata:
+      version: 1.0
+      command: "show flash:"
+      network_os: ios
+
+ - name: Match Free Space
+   pattern_match:
+      regex: "(\\d+) bytes available"
+   register: free_space
+   export: yes
+
+ - name: Match Used Space
+   pattern_match:
+      regex: "\\d+ bytes available\\s\\S(\\d+) bytes used\\S"
+   register: used_space
+   export: yes

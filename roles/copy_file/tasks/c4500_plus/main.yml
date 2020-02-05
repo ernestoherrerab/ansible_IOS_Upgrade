@@ -1,0 +1,70 @@
+---
+
+  - debug:
+      msg: " Copying Files for c4500 plus ..."
+
+#  - debug:
+#      var: space_fact
+
+#  - debug:
+#      var: version_fact
+
+#  - debug:
+#     var: plat_c4500_plus.image
+
+  - name: Abort task if there is not enough space
+    fail: msg="There is not enough space for new image..."
+    when:  space_fact|int < 0
+
+  - name: Run show version command to capture bootflash output
+    ios_command:
+      commands: show bootflash
+    register: show_bootflash_platform
+
+  - name: Run show version command to capture slavebootflash output
+    ios_command:
+      commands: show slavebootflash
+    register: show_slavebootflash_platform
+
+  - debug:
+      var: show_bootflash_platform.stdout[0]
+
+  - name: Set Go Singnal for File prompts
+    set_fact:
+      prompt_go: "Go!"
+    when: plat_c4500_plus.image not in show_bootflash_platform.stdout[0] and plat_c4500_plus.image not in show_slavebootflash_platform.stdout[0]
+
+  - debug:
+      msg: "The image already exists in bootflash..."
+    when: plat_c4500_plus.image in show_bootflash_platform.stdout[0]
+
+  - debug:
+      msg: "The image already exists in bootflash..."
+    when: plat_c4500_plus.image in show_slavebootflash_platform.stdout[0]
+
+#- debug:
+#    var: "Continue with file copy ...."
+
+  - name: Disable prompts
+    ios_config:
+      lines: "file prompt quiet"
+    when: prompt_go is defined
+
+  - name: Copy image to bootflash
+    ios_command:
+      commands: "copy http://{{ transfer_server }}/{{ plat_c4500_plus.image }} bootflash:{{ plat_c4500_plus.image }}"
+    vars:
+      ansible_command_timeout: 3600
+    when: plat_c4500_plus.image not in show_bootflash_platform.stdout[0]
+
+  - name: Copy image to slavebootflash
+    ios_command:
+      commands: "copy http://{{ transfer_server }}/{{ plat_c4500_plus.image }} slavebootflash:{{ plat_c4500_plus.image }}"
+    vars:
+      ansible_command_timeout: 3600
+    when: plat_c4500_plus.image not in show_slavebootflash_platform.stdout[0]
+
+  - name: Re-enable able prompts
+    ios_config:
+      lines: "no file prompt quiet"
+    when: prompt_go is defined
